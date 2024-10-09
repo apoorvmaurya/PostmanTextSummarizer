@@ -1,5 +1,5 @@
 {
-  "name": "deep-learning-sem-vi",
+  "name": "Multi-Lingual Text Summarizer",
   "version": "1.0.0",
   "main": "server.js",
   "type": "module",
@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.20.2",
+    "Multi-Lingual Text Summarizer": "file:",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "node-fetch": "^3.3.2"
