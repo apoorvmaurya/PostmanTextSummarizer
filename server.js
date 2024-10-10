@@ -1,45 +1,75 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
-import express from 'express';
-import bodyParser from 'body-parser';
-import fetch from 'node-fetch';
+const express = require('express');
+const axios = require('axios');
+const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
-app.use(bodyParser.json());
-app.use(express.static('public')); 
+app.use(cors());
+app.use(express.json());
+app.use(express.static('public'));
 
+const API_TOKEN = process.env.HUGGINGFACE_API_TOKEN;
+const API_URL = 'https://api-inference.huggingface.co/models/google/mt5-base';
 
-const HUGGING_FACE_API_URL = 'https://api-inference.huggingface.co/models/facebook/bart-large-cnn';
-const HUGGING_FACE_API_TOKEN = process.env.HUGGING_FACE_API_TOKEN;
+const MAX_RETRIES = 5;
+const RETRY_DELAY = 10000; // 10 seconds
 
+async function query(payload, retries = 0) {
+  try {
+    const response = await axios.post(API_URL, payload, {
+      headers: {
+        'Authorization': `Bearer ${API_TOKEN}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.data.error.includes('currently loading') && retries < MAX_RETRIES) {
+      console.log(`Model is loading. Retrying in ${RETRY_DELAY / 1000} seconds...`);
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+      return query(payload, retries + 1);
+    }
+    throw error;
+  }
+}
 
 app.post('/summarize', async (req, res) => {
-  const { text } = req.body;
+  const { text, language } = req.body;
+
+  if (text.split(' ').length < 200) {
+    return res.status(400).json({ error: 'Please enter at least 200 words.' });
+  }
 
   try {
-    const response = await fetch(HUGGING_FACE_API_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${HUGGING_FACE_API_TOKEN}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ inputs: text })
-    });
+    const payload = {
+      inputs: `summarize this text in ${language}: ${text}`,
+      parameters: {
+        max_length: 150,
+        min_length: 30,
+        do_sample: false,
+        num_return_sequences: 1
+      }
+    };
 
-    const data = await response.json();
-    const summaryText = data[0]?.summary_text || 'Unable to generate summary';
+    const result = await query(payload);
 
-    res.json({ summary: summaryText });
+    let summary = result[0].generated_text;
+
+    // Post-process the summary
+    summary = summary.replace(/<extra_id_\d+>/g, '');  // Remove any <extra_id_X> tokens
+    summary = summary.trim();  // Remove leading/trailing whitespace
+    summary = summary.charAt(0).toUpperCase() + summary.slice(1);  // Capitalize first letter
+    if (!summary.endsWith('.')) summary += '.';  // Add a period if it's missing
+
+    res.json({ summary });
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Something went wrong' });
+    console.error('Error:', error.response ? error.response.data : error.message);
+    res.status(500).json({ error: 'An error occurred while summarizing the text.' });
   }
 });
 
-
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
 });

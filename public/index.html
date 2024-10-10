@@ -1,22 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Text Summarizing Deep Learning Project</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Multi-Lingual Text Summarizer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Your Friendly Text Summarizer</h1>
-    <textarea id="inputText" placeholder="Enter your text here (minimum 150 words)"></textarea>
-    <button id="summarizeButton" disabled>Summarize</button>
-    <div id="summaryContainer" style="display: none;">
-      <h2>Summary:</h2>
-      <p id="summary"></p>
+    <div class="container">
+        <h1>Multi-Lingual Text Summarizer</h1>
+        <div class="input-section">
+            <select id="language-select">
+                <option value="English"><span class="flag-icon flag-icon-gb"></span> English</option>
+                <option value="Hindi"><span class="flag-icon flag-icon-in"></span> Hindi</option>
+                <option value="Bengali"><span class="flag-icon flag-icon-bd"></span> Bengali</option>
+                <option value="Telugu"><span class="flag-icon flag-icon-in"></span> Telugu</option>
+                <option value="Tamil"><span class="flag-icon flag-icon-in"></span> Tamil</option>
+                <option value="Marathi"><span class="flag-icon flag-icon-in"></span> Marathi</option>
+                <option value="Gujarati"><span class="flag-icon flag-icon-in"></span> Gujarati</option>
+                <option value="Kannada"><span class="flag-icon flag-icon-in"></span> Kannada</option>
+                <option value="Malayalam"><span class="flag-icon flag-icon-in"></span> Malayalam</option>
+                <option value="Punjabi"><span class="flag-icon flag-icon-in"></span> Punjabi</option>
+                <option value="Odia"><span class="flag-icon flag-icon-in"></span> Odia</option>
+                <option value="Assamese"><span class="flag-icon flag-icon-in"></span> Assamese</option>
+                <option value="Urdu"><span class="flag-icon flag-icon-pk"></span> Urdu</option>
+            </select>
+            <textarea id="input-text" placeholder="Enter your text here (minimum 200 words)..." rows="10"></textarea>
+            <button id="summarize-btn">Summarize</button>
+        </div>
+        <div class="output-section">
+            <h2>Summary</h2>
+            <div id="summary-output"></div>
+        </div>
     </div>
-  </div>
-
-  <script src="app.js"></script>
+    <div id="error-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="error-message"></p>
+        </div>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
