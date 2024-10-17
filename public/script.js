@@ -25,7 +25,7 @@ async function summarizeText() {
     }
 
     summarizeBtn.disabled = true;
-    summarizeBtn.textContent = 'Summarizing...';
+    summarizeBtn.textContent = 'Processing...';
     summaryOutput.textContent = 'Please wait, this may take a minute...';
 
     try {
@@ -42,14 +42,21 @@ async function summarizeText() {
         }
 
         const data = await response.json();
-        summaryOutput.textContent = data.summary;
-        summaryOutput.classList.add('fade-in');
+        displaySummary(data.summary, data.originalLanguage);
     } catch (error) {
-        showError('An error occurred while summarizing the text. Please try again.');
+        showError('An error occurred while processing the text. Please try again.');
     } finally {
         summarizeBtn.disabled = false;
         summarizeBtn.textContent = 'Summarize';
     }
+}
+
+function displaySummary(summary, originalLanguage) {
+    summaryOutput.innerHTML = `
+        <p><strong>Original Language:</strong> ${originalLanguage}</p>
+        <p>${summary}</p>
+    `;
+    summaryOutput.classList.add('fade-in');
 }
 
 function showError(message) {
