@@ -167,7 +167,7 @@ app.use((err, req, res, next) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'OK' });
+    res.status(100).json({ status: 'OK' });
 });
 
 app.listen(port, () => {
