@@ -27,7 +27,7 @@ function updateWordCount() {
     wordCounter.textContent = words.length;
     
     // Update textarea border based on word count
-    const minWords = 200;
+    const minWords = 100;
     inputText.classList.toggle('valid', words.length >= minWords);
     inputText.classList.toggle('invalid', words.length > 0 && words.length < minWords);
 }
@@ -57,8 +57,8 @@ async function summarizeText() {
     const selectedLanguage = languageSelect.value;
     const words = text.split(/\s+/).filter(word => word.length > 0);
 
-    if (words.length < 200) {
-        showError('Please enter at least 200 words.');
+    if (words.length < 100) {
+        showError('Please enter at least 100 words.');
         return;
     }
 

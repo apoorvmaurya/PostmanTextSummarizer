@@ -86,8 +86,8 @@ async function translateText(text, sourceLang, targetLang) {
 app.post('/summarize', async (req, res) => {
     const { text, language } = req.body;
 
-    if (!text || text.split(/\s+/).filter(w => w.length > 0).length < 200) {
-        return res.status(400).json({ error: 'Please enter at least 200 words.' });
+    if (!text || text.split(/\s+/).filter(w => w.length > 0).length < 100) {
+        return res.status(400).json({ error: 'Please enter at least 100 words.' });
     }
 
     try {
