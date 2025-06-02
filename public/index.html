@@ -1,22 +1,522 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Text Summarizing Deep Learning Project</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Text Summarizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom Apple-inspired gradients and animations */
+        .gradient-bg {
+            background: linear-gradient(135deg, 
+                #0d1421 0%, 
+                #1a1f2e 25%, 
+                #2d1b69 50%, 
+                #1e3a8a 75%, 
+                #0f172a 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .premium-gradient {
+            background: linear-gradient(135deg, 
+                rgba(99, 102, 241, 0.8) 0%, 
+                rgba(139, 92, 246, 0.8) 50%, 
+                rgba(236, 72, 153, 0.8) 100%);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .button-gradient {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .button-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
+        }
+        
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .loading-dots {
+            display: inline-block;
+        }
+        
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+        
+        .scroll-fade {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+        
+        .scroll-fade.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .premium-shadow {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 
+                        0 0 0 1px rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+        }
+    </style>
 </head>
-<body>
-  <div class="container">
-    <h1>Your Friendly Text Summarizer</h1>
-    <textarea id="inputText" placeholder="Enter your text here (minimum 150 words)"></textarea>
-    <button id="summarizeButton" disabled>Summarize</button>
-    <div id="summaryContainer" style="display: none;">
-      <h2>Summary:</h2>
-      <p id="summary"></p>
+<body class="gradient-bg min-h-screen text-white overflow-x-hidden">
+    <!-- Floating background elements -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 floating"></div>
+        <div class="absolute top-3/4 right-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 floating" style="animation-delay: -3s;"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 floating" style="animation-delay: -6s;"></div>
     </div>
-  </div>
 
-  <script src="app.js"></script>
+    <div class="relative z-10">
+        <!-- Header -->
+        <header class="container mx-auto px-6 py-8">
+            <div class="text-center scroll-fade">
+                <h1 class="text-6xl md:text-7xl font-black text-gradient mb-4 tracking-tight">
+                    AI Summarizer
+                </h1>
+                <p class="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+                    Transform lengthy texts into concise summaries with our advanced AI technology. 
+                    Supporting multiple languages with intelligent translation.
+                </p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="container mx-auto px-6 pb-20">
+            <div class="max-w-4xl mx-auto">
+                <!-- Input Section -->
+                <div class="glass-morphism rounded-3xl p-8 md:p-10 mb-8 premium-shadow scroll-fade">
+                    <div class="mb-6">
+                        <label for="language" class="block text-lg font-semibold text-gray-200 mb-3">
+                            Select Language
+                        </label>
+                        <select id="language" class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300">
+                            <option value="English">English</option>
+                            <option value="Hindi">Hindi (हिंदी)</option>
+                            <option value="Bengali">Bengali (বাংলা)</option>
+                            <option value="Telugu">Telugu (తెలుగు)</option>
+                            <option value="Tamil">Tamil (தமிழ்)</option>
+                            <option value="Marathi">Marathi (मराठी)</option>
+                            <option value="Gujarati">Gujarati (ગુજરાતી)</option>
+                            <option value="Kannada">Kannada (ಕನ್ನಡ)</option>
+                            <option value="Malayalam">Malayalam (മലയാളം)</option>
+                            <option value="Punjabi">Punjabi (ਪੰਜਾਬੀ)</option>
+                            <option value="Odia">Odia (ଓଡ଼ିଆ)</option>
+                            <option value="Assamese">Assamese (অসমীয়া)</option>
+                            <option value="Urdu">Urdu (اردو)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="textInput" class="block text-lg font-semibold text-gray-200 mb-3">
+                            Enter Text to Summarize
+                        </label>
+                        <textarea 
+                            id="textInput" 
+                            rows="10" 
+                            class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 resize-none"
+                            placeholder="Paste your text here (minimum 100 words required)..."
+                        ></textarea>
+                        <div class="flex justify-between items-center mt-2">
+                            <span id="wordCount" class="text-sm text-gray-400">Word count: 0</span>
+                            <span id="requirement" class="text-sm text-red-400 opacity-0 transition-opacity duration-300">Minimum 100 words required</span>
+                        </div>
+                    </div>
+                    
+                    <button 
+                        id="summarizeBtn" 
+                        class="w-full button-gradient text-white font-bold py-4 px-8 rounded-xl text-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
+                        disabled
+                    >
+                        <span id="btnText">Summarize Text</span>
+                    </button>
+                </div>
+
+                <!-- Loading Section -->
+                <div id="loadingSection" class="glass-morphism rounded-3xl p-8 premium-shadow mb-8 hidden">
+                    <div class="text-center">
+                        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mb-4"></div>
+                        <h3 class="text-xl font-semibold mb-2">Processing Your Text</h3>
+                        <p id="loadingText" class="text-gray-300">Analyzing content<span class="loading-dots"></span></p>
+                        <div class="w-full bg-gray-700 rounded-full h-2 mt-4">
+                            <div id="progressBar" class="premium-gradient h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div id="resultsSection" class="glass-morphism rounded-3xl p-8 md:p-10 premium-shadow hidden scroll-fade">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-gradient">Summary Result</h2>
+                        <span id="originalLang" class="bg-gray-700 px-3 py-1 rounded-full text-sm"></span>
+                    </div>
+                    
+                    <div class="bg-gray-800 rounded-xl p-6 mb-6">
+                        <p id="summaryText" class="text-gray-100 leading-relaxed text-lg"></p>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <button 
+                            id="copyBtn" 
+                            class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-2"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                            Copy Summary
+                        </button>
+                        <button 
+                            id="newSummaryBtn" 
+                            class="flex-1 button-gradient text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300"
+                        >
+                            New Summary
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Error Section -->
+                <div id="errorSection" class="glass-morphism rounded-3xl p-8 premium-shadow mb-8 hidden">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2 text-red-400">Error Processing Text</h3>
+                        <p id="errorText" class="text-gray-300 mb-4"></p>
+                        <button 
+                            id="retryBtn" 
+                            class="button-gradient text-white font-semibold py-2 px-6 rounded-xl transition-all duration-300"
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="container mx-auto px-6 py-8 text-center">
+            <p class="text-gray-400">
+                Powered by Advanced AI Technology • Built with ❤️ for seamless text processing
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // DOM Elements
+        const textInput = document.getElementById('textInput');
+        const languageSelect = document.getElementById('language');
+        const summarizeBtn = document.getElementById('summarizeBtn');
+        const wordCount = document.getElementById('wordCount');
+        const requirement = document.getElementById('requirement');
+        const loadingSection = document.getElementById('loadingSection');
+        const resultsSection = document.getElementById('resultsSection');
+        const errorSection = document.getElementById('errorSection');
+        const summaryText = document.getElementById('summaryText');
+        const originalLang = document.getElementById('originalLang');
+        const copyBtn = document.getElementById('copyBtn');
+        const newSummaryBtn = document.getElementById('newSummaryBtn');
+        const retryBtn = document.getElementById('retryBtn');
+        const btnText = document.getElementById('btnText');
+        const loadingText = document.getElementById('loadingText');
+        const progressBar = document.getElementById('progressBar');
+        const errorText = document.getElementById('errorText');
+
+        // Variables
+        let currentText = '';
+        let currentLanguage = '';
+
+        // Word count and validation
+        textInput.addEventListener('input', function() {
+            const text = this.value.trim();
+            const words = text.split(/\s+/).filter(word => word.length > 0);
+            const wordCountNum = words.length;
+            
+            wordCount.textContent = `Word count: ${wordCountNum}`;
+            
+            if (text.length === 0) {
+                requirement.textContent = 'Please enter some text';
+                requirement.style.opacity = '1';
+                summarizeBtn.disabled = true;
+            } else if (wordCountNum < 100) {
+                requirement.textContent = `${100 - wordCountNum} more words needed`;
+                requirement.style.opacity = '1';
+                summarizeBtn.disabled = true;
+            } else {
+                requirement.style.opacity = '0';
+                summarizeBtn.disabled = false;
+            }
+        });
+
+        // Summarize function
+        async function summarizeText() {
+            currentText = textInput.value.trim();
+            currentLanguage = languageSelect.value;
+
+            // Validate input
+            if (!currentText) {
+                errorText.textContent = 'Please enter some text to summarize.';
+                errorSection.classList.remove('hidden');
+                return;
+            }
+
+            const words = currentText.split(/\s+/).filter(word => word.length > 0);
+            if (words.length < 100) {
+                errorText.textContent = 'Please enter at least 100 words.';
+                errorSection.classList.remove('hidden');
+                return;
+            }
+
+            // Hide previous results/errors
+            resultsSection.classList.add('hidden');
+            errorSection.classList.add('hidden');
+            loadingSection.classList.remove('hidden');
+
+            // Disable button during processing
+            summarizeBtn.disabled = true;
+            btnText.textContent = 'Processing...';
+
+            // Start progress animation
+            const progressInterval = animateProgress();
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => {
+                    controller.abort();
+                }, 120000); // 2 minute timeout
+
+                const response = await fetch('/summarize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: currentText,
+                        language: currentLanguage
+                    }),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+                clearInterval(progressInterval);
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || `Server error: ${response.status}`);
+                }
+
+                // Validate response
+                if (!data.summary) {
+                    throw new Error('No summary received from server');
+                }
+
+                // Show results
+                summaryText.textContent = data.summary;
+                originalLang.textContent = data.originalLanguage || currentLanguage;
+                
+                loadingSection.classList.add('hidden');
+                resultsSection.classList.remove('hidden');
+                
+                // Trigger scroll fade animation
+                setTimeout(() => {
+                    resultsSection.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+
+            } catch (error) {
+                console.error('Error:', error);
+                clearInterval(progressInterval);
+                
+                let errorMessage = 'An unexpected error occurred. Please try again.';
+                
+                if (error.name === 'AbortError') {
+                    errorMessage = 'Request timed out. Please try with shorter text or try again later.';
+                } else if (error.message.includes('Failed to fetch')) {
+                    errorMessage = 'Unable to connect to server. Please check your connection and try again.';
+                } else if (error.message) {
+                    errorMessage = error.message;
+                }
+                
+                errorText.textContent = errorMessage;
+                loadingSection.classList.add('hidden');
+                errorSection.classList.remove('hidden');
+                
+                // Scroll to error
+                setTimeout(() => {
+                    errorSection.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+            } finally {
+                // Re-enable button
+                summarizeBtn.disabled = false;
+                btnText.textContent = 'Summarize Text';
+            }
+        }
+
+        // Progress animation
+        function animateProgress() {
+            const steps = [
+                { width: 10, text: 'Initializing request' },
+                { width: 25, text: 'Analyzing content' },
+                { width: 45, text: 'Processing language' },
+                { width: 65, text: 'Translating if needed' },
+                { width: 85, text: 'Generating summary' },
+                { width: 95, text: 'Finalizing results' }
+            ];
+
+            let currentStep = 0;
+            progressBar.style.width = '0%';
+            
+            const interval = setInterval(() => {
+                if (currentStep < steps.length) {
+                    progressBar.style.width = steps[currentStep].width + '%';
+                    loadingText.innerHTML = steps[currentStep].text + '<span class="loading-dots"></span>';
+                    currentStep++;
+                } else {
+                    // Keep the last step active
+                    progressBar.style.width = '98%';
+                }
+            }, 1200);
+            
+            return interval; // Return interval so it can be cleared
+        }
+
+        // Copy to clipboard
+        async function copyToClipboard() {
+            try {
+                await navigator.clipboard.writeText(summaryText.textContent);
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Copied!
+                `;
+                copyBtn.classList.add('bg-green-600');
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                    copyBtn.classList.remove('bg-green-600');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+        }
+
+        // Reset for new summary
+        function resetForNewSummary() {
+            textInput.value = '';
+            wordCount.textContent = 'Word count: 0';
+            requirement.style.opacity = '1';
+            summarizeBtn.disabled = true;
+            resultsSection.classList.add('hidden');
+            errorSection.classList.add('hidden');
+            textInput.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Event listeners
+        summarizeBtn.addEventListener('click', summarizeText);
+        copyBtn.addEventListener('click', copyToClipboard);
+        newSummaryBtn.addEventListener('click', resetForNewSummary);
+        retryBtn.addEventListener('click', summarizeText);
+
+        // Enter key support (Ctrl+Enter to summarize)
+        textInput.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter' && !summarizeBtn.disabled) {
+                summarizeText();
+            }
+        });
+
+        // Scroll animations
+        function handleScrollAnimations() {
+            const elements = document.querySelectorAll('.scroll-fade');
+            elements.forEach(el => {
+                const elementTop = el.getBoundingClientRect().top;
+                const elementVisible = 150;
+                
+                if (elementTop < window.innerHeight - elementVisible) {
+                    el.classList.add('visible');
+                }
+            });
+        }
+
+        // Initialize scroll animations
+        window.addEventListener('scroll', handleScrollAnimations);
+        window.addEventListener('load', handleScrollAnimations);
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial state
+            handleScrollAnimations();
+            
+            // Add some initial animation delay
+            setTimeout(() => {
+                document.querySelectorAll('.scroll-fade').forEach((el, index) => {
+                    setTimeout(() => {
+                        el.classList.add('visible');
+                    }, index * 200);
+                });
+            }, 300);
+        });
+    </script>
 </body>
 </html>
